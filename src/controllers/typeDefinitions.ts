@@ -14,6 +14,29 @@ export interface Product {
 	createdOn: string;
 	lookupCode: string;
 }
+
+export interface Employee {
+	id: string;
+	active: boolean;
+	lastName: string;
+	createdOn: Date;
+	firstName: string;
+	managerId: string;
+	employeeId: string;
+	classification: number;
+}
+
+export interface ActiveUser {
+	id: string;
+	name: string;
+	employeeId: string;
+	classification: number;
+}
+
+export interface EmployeeType {
+	value: number;
+	label: string;
+}
 // End response data object definitions
 
 // Page response data
