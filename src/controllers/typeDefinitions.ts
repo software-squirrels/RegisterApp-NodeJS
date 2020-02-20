@@ -4,6 +4,17 @@ export interface ProductSaveRequest {
 	count: number;
 	lookupCode: string;
 }
+
+export interface EmployeeSaveRequest {
+	id?: string;
+	active: boolean;
+	lastName: string;
+	password: string;
+	firstName: string;
+	managerId?: string;
+	classification: number;
+	isInitialEmployee?: boolean;
+}
 // End request object definitions
 
 // Response object definitions
@@ -13,6 +24,29 @@ export interface Product {
 	count: number;
 	createdOn: string;
 	lookupCode: string;
+}
+
+export interface Employee {
+	id: string;
+	active: boolean;
+	lastName: string;
+	createdOn: Date;
+	firstName: string;
+	managerId: string;
+	employeeId: string;
+	classification: number;
+}
+
+export interface ActiveUser {
+	id: string;
+	name: string;
+	employeeId: string;
+	classification: number;
+}
+
+export interface EmployeeType {
+	value: number;
+	label: string;
 }
 // End response data object definitions
 
