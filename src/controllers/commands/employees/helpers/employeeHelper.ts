@@ -1,7 +1,8 @@
-import { EmployeeClassification } from "../../models/constants/entityTypes";
+import { EmployeeClassification } from '../../models/constants/entityTypes';
+import crypto from 'crypto';
 
 export const hashString = (toHash: string): string => {
-	return ""; // TODO: Look at https://nodejs.org/docs/latest-v12.x/api/crypto.html#crypto_crypto_createhash_algorithm_options as one option
+	return crypto.createHash('md5').update(toHash).digest('hex');
 };
 
 export const isElevatedUser = (employeeClassification: EmployeeClassification): boolean => {
