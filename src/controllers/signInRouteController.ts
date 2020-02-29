@@ -3,6 +3,9 @@ import { Resources, ResourceKey } from "../resourceLookup";
 import * as Helper from "./helpers/routeControllerHelper";
 import { ViewNameLookup, QueryParameterLookup } from "./lookups/routingLookup";
 import { CommandResponse, MainMenuPageResponse } from "./typeDefinitions";
+import { ActiveEmployeeExists } from "./commands/employees/activeEmployeeExistsQuery";
+import { EmployeeSignIn } from "./commands/employees/employeeSignInCommand";
+import { ClearActiveUser } from "./commands/employees/clearActiveUserCommand";
 
 const processStartSigninError = (res: Response, error: any): void => {
 	res.setHeader(
@@ -53,7 +56,7 @@ const processSignOutError = (res: Response, error: any): void => {
 
 export const start = async (req: Request, res: Response): Promise<void> => {
 	return
-	//CHECK IF EMPLOYEE EXISTS -- TASK 5//
+	ActiveEmployeeExists.execute()
 	.then((employeesCommandResponse: boolean): void => {
 		if(!employeesCommandResponse){
 			return res.render(ViewNameLookup.MainMenu);
@@ -70,14 +73,13 @@ export const signIn = async (req: Request, res: Response): Promise<void> => {
 	//  to sign in the user
 
 	return
-	//CHECK IF USER AND PASSWORD EXISTS//
+	EmployeeSignIn.execute(req.body, (<Express.Session>req.session).id)
 	.then((employeeCommandResponse: CommandResponse<ActiveUser>): void => {
 		if(!employeeCommandResponse){
 			return res.render(ViewNameLookup.SignIn, (): void => {
 				res.send(Resources.getString(ResourceKey.UseUSER_NOT_FOUND));
 			}
 		}
-		//ADD SESSION ID AND USER TO ACTIVE USER TABLE//
 		return res.render(ViewNameLookup.MainMenu);
 }).catch((error: any): void => {
 		return processSignInError(res, error);
@@ -88,7 +90,7 @@ export const clearActiveUser = async (req: Request, res: Response): Promise<void
 	// TODO: Sign out the user associated with req.session.id
 
 	return
-	//DELETE USER ASSOCIATED WITH SESSION ID//
+	ClearActiveUser.execute((<Express.Session>req.session).id)
 	.then((): void => {
 		return res.render(ViewNameLookup.SignIn, <ApiResponse>{
 			redirectUrl: ViewNameLookup.SignIn,
