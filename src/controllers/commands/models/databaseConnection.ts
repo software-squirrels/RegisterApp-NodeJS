@@ -7,6 +7,9 @@ export const DatabaseConnection: Sequelize.Sequelize =
 		<string>process.env.DATABASE_URL,
 		<Sequelize.Options>{
 			dialect:  "postgres",
+			dialectOptions:	{
+				ssl: true
+			},
 			protocol: "postgres",
 			omitNull: true,
 			freezeTableName: true,
