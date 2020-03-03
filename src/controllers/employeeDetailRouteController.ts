@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import * as Helper from "./helpers/routeControllerHelper";
 import { Resources, ResourceKey } from "../resourceLookup";
 import * as EmployeeHelper from "./commands/employees/helpers/employeeHelper";
+import { ViewNameLookup, ParameterLookup, RouteLookup } from "./lookups/routingLookup";
 import * as ValidateActiveUser from "./commands/activeUsers/validateActiveUserCommand";
 import { CommandResponse, Employee, EmployeeSaveRequest, ActiveUser } from "./typeDefinitions";
 
@@ -22,18 +23,25 @@ export const start = async (req: Request, res: Response): Promise<void> => {
 	}
 
 	return determineCanCreateEmployee(req)
-		.then((canCreateEmployee: CanCreateEmployee): void => {
-			if (canCreateEmployee.employeeExists
-				&& !canCreateEmployee.isElevatedUser) {
+	.then((canCreateEmployee: CanCreateEmployee): void => {
+		if (canCreateEmployee.employeeExists
+			&& !canCreateEmployee.isElevatedUser) {
 
 				return res.redirect(Helper.buildNoPermissionsRedirectUrl());
 			}
 
-			// TODO: Serve up the page
+			return res.render(ViewNameLookup.EmployeeDetail);
 		}).catch((error: any): void => {
-			// TODO: Handle any errors that occurred
+			let errorMessage: (string | undefined) = "";
+			if ((error.status != null) && (error.status >= 500)) {
+				errorMessage = error.message;
+			}
+
+			return res.render(ViewNameLookup.EmployeeDetail, <PageResponse>{
+				errorMessage: errorMessage
+			});
 		});
-};
+	};
 
 export const startWithEmployee = async (req: Request, res: Response): Promise<void> => {
 	if (Helper.handleInvalidSession(req, res)) {
@@ -50,6 +58,7 @@ export const startWithEmployee = async (req: Request, res: Response): Promise<vo
 			}
 
 			// TODO: Query the employee details using the request route parameter
+			const req.params[ParameterLookup.EmployeeId]
 			return Promise.resolve();
 		}).then((/* TODO: Some employee details */): void => {
 			// TODO: Serve up the page
