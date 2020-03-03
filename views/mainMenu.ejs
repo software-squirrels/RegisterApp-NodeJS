@@ -7,8 +7,8 @@
 	<link rel="stylesheet" type="text/css" href="/styles/master.css">
 
 	<script type="text/javascript" src="/scripts/master.js" defer></script>
-	<script type="text/javascript" src="/scripts/mainMenu.js" defer></script>
-	<script> var noImplementation = "No implementation";</script>
+	<!--<script type="text/javascript" src="/scripts/mainMenu.js" defer></script>-->
+	<script> var noImplementation = "Functionality has not yet been implemented";</script>
 </head>
 
 <body>
@@ -28,7 +28,7 @@
 		
 		<!-- TODO: Add the various action button elements -->
 		<div>
-			<a onclick="displayError(noImplementation)" class="button">Start Transaction</a>
+			<a onclick="return displayError(noImplementation)" class="button">Start Transaction</a>
 		</div>
 		<br />
 		
@@ -51,12 +51,12 @@
 		<br />
 		
 		<div>
-			<a id="salesReportButton" onclick="displayError(noImplementation)" class="button">Sales Report</a>
+			<a id="salesReportButton" onclick="return displayError(noImplementation)" class="button">Sales Report</a>
 		</div>
 		<br />
 		
 		<div>
-			<a id="cashierReportButton" onclick="displayError(noImplementation)" class="button">Cashier Report</a>
+			<a id="cashierReportButton" onclick="return displayError(noImplementation)" class="button">Cashier Report</a>
 		</div>
 		<br />
 	</div>

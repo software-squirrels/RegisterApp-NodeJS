@@ -145,7 +145,7 @@ function clearError() {
 
 function displayError(errorMessage) {
 	if ((errorMessage == null) || (errorMessage === "")) {
-		return;
+		return false;	//Just to prevent invalid URL redirects, returns false
 	}
 
 	const errorMessageDisplayElement = getErrorMessageDisplayElement();
@@ -154,7 +154,7 @@ function displayError(errorMessage) {
 	if ((errorMessageContainerElement == null)
 		|| (errorMessageDisplayElement == null)) {
 
-		return;
+		return false;	//Just to prevent invalid URL redirects, returns false
 	}
 
 	errorMessageDisplayElement.innerHTML = errorMessage;
@@ -185,9 +185,9 @@ function signOutActionClickHandler() {
 			&& (callbackResponse.data.redirectUrl != null)
 			&& (callbackResponse.data.redirectUrl !== "")) {
 	
-			window.location.replace(callbackResponse.data.redirectUrl);
+			window.location.replace(callbackResponse.data.redirectUrl);	//This sends it back to redirect URL
 		} else {
-			window.location.replace("/");
+			window.location.replace("/");	//This sends it back to app main view if there isn't a redirect URL
 		}
 	});
 }
