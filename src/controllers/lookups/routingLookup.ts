@@ -10,7 +10,8 @@ export enum QueryParameterLookup {
 export enum ViewNameLookup {
 	ProductDetail = "productDetail",
 	ProductListing = "productListing",
-	EmployeeDetail = "employeeDetail"
+	EmployeeDetail = "employeeDetail",
+	SignIn = "signIn"
 }
 
 export enum RouteLookup {
