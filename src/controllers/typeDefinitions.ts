@@ -4,6 +4,11 @@ export interface ProductSaveRequest {
 	count: number;
 	lookupCode: string;
 }
+
+export interface UserSignInRequest {
+	employeeId: string;
+	password: string;
+}
 // End request object definitions
 
 // Response object definitions
