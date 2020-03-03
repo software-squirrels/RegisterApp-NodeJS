@@ -7,6 +7,9 @@ import * as ProductDeleteCommand from "./commands/products/productDeleteCommand"
 import * as ProductUpdateCommand from "./commands/products/productUpdateCommand";
 import { CommandResponse, Product, ProductDetailPageResponse, ApiResponse, ProductSaveResponse, ProductSaveRequest } from "./typeDefinitions";
 
+//Other Imports
+import * as ValidateActiveUser from "./commands/activeUsers/validateActiveUserCommand";
+
 const processStartProductDetailError = (res: Response, error: any): void => {
 	let errorMessage: (string | undefined) = "";
 	if ((error.status != null) && (error.status >= 500)) {
@@ -29,9 +32,19 @@ const processStartProductDetailError = (res: Response, error: any): void => {
 export const start = async (req: Request, res: Response): Promise<void> => {
 	return ProductQuery.queryById(req.params[ParameterLookup.ProductId])
 		.then((productsCommandResponse: CommandResponse<Product>): void => {
+			//Copy paste from mainMenuRouteController
+			const isElevatedUser: boolean = true;
+			
+			//Check for isElevatedUser
+			
+			//const isElevatedUser: boolean = false;
+			//	EmployeeHelper.isElevatedUser(
+			//		(<ActiveUser>activeUserCommandResponse.data).classification);
+			
 			return res.render(
 				ViewNameLookup.ProductDetail,
 				<ProductDetailPageResponse>{
+					isElevatedUser: isElevatedUser,
 					product: productsCommandResponse.data
 				});
 		}).catch((error: any): void => {

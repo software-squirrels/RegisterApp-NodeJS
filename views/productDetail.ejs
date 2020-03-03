@@ -50,6 +50,13 @@
 				</tbody>
 			</table>
 		</div>
+		
+		<% if (!locals.isElevatedUser) { %>
+			<% document.getElementById("saveButton").style.display = "none"; %>
+			<% document.getElementById("deleteButton").style.display = "none"; %>
+			<% document.getElementById("productLookupCode").disabled = true; %>
+			<% document.getElementById("productCount").disabled = true; %>
+		<% } %>
 
 		<div>
 			<br />
