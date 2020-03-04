@@ -12,8 +12,7 @@ export enum ViewNameLookup {
 	MainMenu = "mainMenu",
 	ProductDetail = "productDetail",
 	ProductListing = "productListing",
-	EmployeeDetail = "employeeDetail",
-	SignIn = "signIn"
+	EmployeeDetail = "employeeDetail"
 }
 
 export enum RouteLookup {
