@@ -5,5 +5,8 @@ export const hashString = (toHash: string): string => {
 };
 
 export const isElevatedUser = (employeeClassification: EmployeeClassification): boolean => {
-	return false; // TODO: Determine if an employee is an elevated user by their classification
+	if ([EmployeeClassification.GeneralManager, EmployeeClassification.ShiftManager].indexOf(employeeClassification) <= -1) {
+		return false;
+	}
+	return true;
 };
