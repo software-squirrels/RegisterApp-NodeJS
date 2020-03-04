@@ -1,7 +1,10 @@
-import { EmployeeClassification } from "../../models/constants/entityTypes";
+import { EmployeeClassification } from '../../models/constants/entityTypes';
+import { Employee } from "../../../typeDefinitions";
+import { EmployeeModel } from "../../models/employeeModel";
+import crypto from 'crypto';
 
 export const hashString = (toHash: string): string => {
-	return ""; // TODO: Look at https://nodejs.org/docs/latest-v12.x/api/crypto.html#crypto_crypto_createhash_algorithm_options as one option
+	return crypto.createHash('md5').update(toHash).digest('hex');
 };
 
 export const isElevatedUser = (employeeClassification: EmployeeClassification): boolean => {
@@ -9,4 +12,17 @@ export const isElevatedUser = (employeeClassification: EmployeeClassification): 
 		return false;
 	}
 	return true;
+};
+
+export const mapEmployeeData = (queriedEmployee: EmployeeModel): Employee => {
+	return <Employee> {
+		id: queriedEmployee.id,
+		active: queriedEmployee.active,
+		lastName: queriedEmployee.lastName,
+		createdOn: queriedEmployee.createdOn,
+		firstName: queriedEmployee.firstName,
+		managerId: queriedEmployee.managerId,
+		employeeId: queriedEmployee.employeeId.toString(),
+		classification: queriedEmployee.classification
+	};
 };
