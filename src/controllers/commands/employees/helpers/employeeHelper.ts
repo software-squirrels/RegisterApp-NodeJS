@@ -1,7 +1,6 @@
 import { EmployeeClassification } from '../../models/constants/entityTypes';
 import { Employee } from "../../../typeDefinitions";
 import { EmployeeModel } from "../../models/employeeModel";
-import * as Helper from "../../helpers/helper";
 import crypto from 'crypto';
 
 export const hashString = (toHash: string): string => {
