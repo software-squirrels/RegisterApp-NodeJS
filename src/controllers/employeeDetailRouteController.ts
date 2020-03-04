@@ -2,9 +2,11 @@ import { Request, Response } from "express";
 import * as Helper from "./helpers/routeControllerHelper";
 import { Resources, ResourceKey } from "../resourceLookup";
 import * as EmployeeHelper from "./commands/employees/helpers/employeeHelper";
+import * as EmployeeQuery from "./commands/employees/employeeQuery";
 import { ViewNameLookup, ParameterLookup, RouteLookup } from "./lookups/routingLookup";
 import * as ValidateActiveUser from "./commands/activeUsers/validateActiveUserCommand";
-import { CommandResponse, Employee, EmployeeSaveRequest, ActiveUser } from "./typeDefinitions";
+import * as ActiveEmployeeExistsQuery from "./commands/employees/activeEmployeeExistsQuery"
+import { CommandResponse, Employee, EmployeeSaveRequest, ActiveUser, PageResponse } from "./typeDefinitions";
 
 interface CanCreateEmployee {
 	employeeExists: boolean;
@@ -12,60 +14,72 @@ interface CanCreateEmployee {
 }
 
 const determineCanCreateEmployee = async (req: Request): Promise<CanCreateEmployee> => {
-	// TODO: Logic to determine if the user associated with the current session
-	//  is able to create an employee
-	return <CanCreateEmployee>{ employeeExists: false, isElevatedUser: false };
+	return ActiveEmployeeExists()
+	.then((activeUserCommandResponse: <CommandResponse<Employee>>): Promise<CanCreateEmployee> => {
+		return ValidateActiveUser(req.session.id)
+		.then((activeUser: CommandResponse<ActiveUser>): Promise<CanCreateEmployee> => {
+			if (EmployeeHelper.isElevatedUser(activeUser.data)) {
+				return <CanCreateEmployee> { employeeExists: true, isElevatedUser: false };
+			}
+
+			return <CanCreateEmployee> { employeeExists: true, isElevatedUser: false }
+		}).catch(()=>{
+			return <CanCreateEmployee> { employeeExists: true, isElevatedUser: false};
+		});
+		return <CanCreateEmployee>{ employeeExists: true, isElevatedUser: false };
+	}).catch((error: any): Promise<CanCreateEmployee> => {
+		return <CanCreateEmployee>{ employeeExists: false, isElevatedUser: false };
+	});
 };
 
 export const start = async (req: Request, res: Response): Promise<void> => {
-	if (Helper.handleInvalidSession(req, res)) {
-		return;
-	}
+ 	if (Helper.handleInvalidSession(req, res)) {
+ 		return;
+ 	}
 
-	return determineCanCreateEmployee(req)
-	.then((canCreateEmployee: CanCreateEmployee): void => {
-		if (canCreateEmployee.employeeExists
-			&& !canCreateEmployee.isElevatedUser) {
-
-				return res.redirect(Helper.buildNoPermissionsRedirectUrl());
+ 	return determineCanCreateEmployee(req)
+ 		.then((canCreateEmployee: CanCreateEmployee): void => {
+ 			if (canCreateEmployee.employeeExists
+ 				&& !canCreateEmployee.isElevatedUser) {
+ 				return res.redirect(Helper.buildNoPermissionsRedirectUrl());
+ 			}
+			else if (!canCreateEmployee.employeeExists || canCreateEmployee.isElevatedUser) {
+				return res.render(ViewNameLookup.EmployeeDetail);
 			}
 
-			return res.render(ViewNameLookup.EmployeeDetail);
-		}).catch((error: any): void => {
-			let errorMessage: (string | undefined) = "";
-			if ((error.status != null) && (error.status >= 500)) {
-				errorMessage = error.message;
-			}
-
-			return res.render(ViewNameLookup.EmployeeDetail, <PageResponse>{
-				errorMessage: errorMessage
+ 			return res.render(ViewNameLookup.SignIn, <PageResponse>{
+				errorMessage: ResouResources.getString(ResourceKey.USER_SESSION_NOT_ACTIVE)
 			});
-		});
-	};
+ 		}).catch((error: any): void => {
+			return res.render(ViewNameLookup.SignIn, <PageResponse>{
+				errorMessage: Resources.getString(ResourceKey.USER_SESSION_NOT_FOUND)
+			});
+ 		});
+ };
 
-export const startWithEmployee = async (req: Request, res: Response): Promise<void> => {
-	if (Helper.handleInvalidSession(req, res)) {
-		return;
-	}
+ export const startWithEmployee = async (req: Request, res: Response): Promise<void> => {
+  	if (Helper.handleInvalidSession(req, res)) {
+  		return;
+  	}
 
-	return ValidateActiveUser.execute((<Express.Session>req.session).id)
-		.then((activeUserCommandResponse: CommandResponse<ActiveUser>): Promise<void> => {
-			if (!EmployeeHelper.isElevatedUser((<ActiveUser>activeUserCommandResponse.data).classification)) {
-				return Promise.reject(<CommandResponse<Employee>>{
-					status: 403,
-					message: Resources.getString(ResourceKey.USER_NO_PERMISSIONS)
+  	return ValidateActiveUser.execute((<Express.Session>req.session).id)
+  		.then((activeUserCommandResponse: CommandResponse<ActiveUser>): Promise<void> => {
+  			if (!EmployeeHelper.isElevatedUser((<ActiveUser>activeUserCommandResponse.data).classification)) {
+  				return Promise.reject(<CommandResponse<Employee>>{
+  					status: 403,
+  					message: Resources.getString(ResourceKey.USER_NO_PERMISSIONS)
+  				});
+  			}
+
+  			return EmployeeQuery.execute(activeUserCommandResponse.data.id);
+  		}).then((employee: Employee): void => {
+  				return res.render(ViewNameLookup.EmployeeDetail, employee);
+  		}).catch((error: any): void => {
+  			return res.redirect(RouteLookup.SignIn, <PageResponse>{
+					errorMessage: error.message
 				});
-			}
-
-			// TODO: Query the employee details using the request route parameter
-			const req.params[ParameterLookup.EmployeeId]
-			return Promise.resolve();
-		}).then((/* TODO: Some employee details */): void => {
-			// TODO: Serve up the page
-		}).catch((error: any): void => {
-			// TODO: Handle any errors that occurred
-		});
-};
+  		});
+  };
 
 const saveEmployee = async (
 	req: Request,
@@ -110,9 +124,10 @@ const saveEmployee = async (
 };
 
 export const updateEmployee = async (req: Request, res: Response): Promise<void> => {
-	return; // TODO: invoke saveEmployee() with the appropriate save functionality
+	return saveEmployee(req, res, ); // TODO: invoke saveEmployee() with the appropriate save functionality
 };
 
 export const createEmployee = async (req: Request, res: Response): Promise<void> => {
+
 	return; // TODO: invoke saveEmployee() with the appropriate save functionality
 };
