@@ -61,11 +61,11 @@ const saveProduct = async (
 };
 
 export const updateProduct = async (req: Request, res: Response): Promise<void> => {
-	saveProduct(req, res, ProductUpdateCommand.execute);
+	return saveProduct(req, res, ProductUpdateCommand.execute);
 };
 
 export const createProduct = async (req: Request, res: Response): Promise<void> => {
-	saveProduct(req, res, ProductCreateCommand.execute);
+	return saveProduct(req, res, ProductCreateCommand.execute);
 };
 
 export const deleteProduct = async (req: Request, res: Response): Promise<void> => {
