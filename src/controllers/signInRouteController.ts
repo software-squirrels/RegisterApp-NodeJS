@@ -27,7 +27,7 @@ export const start = async (req: Request, res: Response): Promise<void> => {
 	.then((): void => {
 		return res.render(ViewNameLookup.SignIn);
 	}).catch((): void => {
-		return res.render(ViewNameLookup.MainMenu);
+		return res.render(ViewNameLookup.EmployeeDetail);
 });
 };
 
