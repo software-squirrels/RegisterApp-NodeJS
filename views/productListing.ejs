@@ -24,10 +24,14 @@
 				<% } %>
 			</h4>
 		</div>
+		
+		<% if (!locals.isElevatedUser) { %>
+			<% document.getElementById("createNewButton").style.display = "none"; %>
+		<% } %>
 
 		<div class="productsWrapper">
 			<div>
-				<a href="/productDetail/" class="button">Create New</a>
+				<a id="createNewButton" href="/productDetail/" class="button">Create New</a>
 			</div>
 			<br />
 			<br />

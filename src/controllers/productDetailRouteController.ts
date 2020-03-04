@@ -30,16 +30,21 @@ const processStartProductDetailError = (res: Response, error: any): void => {
 };
 
 export const start = async (req: Request, res: Response): Promise<void> => {
+	if (Helper.handleInvalidSession(req, res)) {
+		return;
+	}
+	
+	let isElevatedUser: boolean;
+	
+	return ValidateActiveUser.execute((<Express.Session>req.session).id)
+		.then((activeUserCommandResponse: CommandResponse<ActiveUser>): Promise<CommandResponse<Product[]>> => {
+			isElevatedUser =
+				EmployeeHelper.isElevatedUser(
+					(<ActiveUser>activeUserCommandResponse.data).classification);
+
+	
 	return ProductQuery.queryById(req.params[ParameterLookup.ProductId])
-		.then((productsCommandResponse: CommandResponse<Product>): void => {
-			//Copy paste from mainMenuRouteController
-			const isElevatedUser: boolean = true;
-			
-			//Check for isElevatedUser
-			
-			//const isElevatedUser: boolean = false;
-			//	EmployeeHelper.isElevatedUser(
-			//		(<ActiveUser>activeUserCommandResponse.data).classification);
+		}).then((productsCommandResponse: CommandResponse<Product>): void => {
 			
 			return res.render(
 				ViewNameLookup.ProductDetail,

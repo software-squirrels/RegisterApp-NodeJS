@@ -21,8 +21,19 @@ const processStartProductListingError = (error: any, res: Response): void => {
 };
 
 export const start = async (req: Request, res: Response): Promise<void> => {
+	if (Helper.handleInvalidSession(req, res)) {
+		return;
+	}
+	let isElevatedUser: boolean;
+	
+	return ValidateActiveUser.execute((<Express.Session>req.session).id)
+		.then((activeUserCommandResponse: CommandResponse<ActiveUser>): Promise<CommandResponse<Product[]>> => {
+			isElevatedUser =
+				EmployeeHelper.isElevatedUser(
+					(<ActiveUser>activeUserCommandResponse.data).classification);
+
 	return ProductsQuery.query()
-		.then((productsCommandResponse: CommandResponse<Product[]>): void => {
+		}).then((productsCommandResponse: CommandResponse<Product[]>): void => {
 			res.setHeader(
 				"Cache-Control",
 				"no-cache, max-age=0, must-revalidate, no-store");
