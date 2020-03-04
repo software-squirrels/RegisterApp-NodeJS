@@ -8,6 +8,12 @@ document.addEventListener("DOMContentLoaded", () => {
 // Save
 function saveActionClick(event) {
 	// TODO: Actually save the employee via an AJAX call
+	if (!validateSave()) {
+		return;
+	}
+
+	const saveActionElement = event.target;
+	saveActionElement.disabled = true;
 	displayEmployeeSavedAlertModal();
 }
 
@@ -16,22 +22,34 @@ function validateSave() {
 	const employeeFirstName = getEmployeeFirstName();
 	if ((employeeFirstName == null) || (employeeFirstName.trim() === "")) {
 		displayError("Please provide your first name.");
+		employeeFirstName.focus();
+		employeeFirstName.select();
 		return false;
 	}
 
 	const employeeLastName = getEmployeeLastName();
 	if ((employeeLastName == null) || (employeeLastName.trim() === "")) {
 		displayError("Please provide your last name.");
+		employeeLastName.focus();
+		employeeLastName.select();
 		return false;
 	}
 	
 	const employeePassword = getEmployeePassword();
 	if ((employeePassword == null) || (employeePassword.trim() === "") || (employeePassword != getEmployeeConfirmPassword())) {
 		displayError("The password you entered is not correct.");
+		employeePassword.focus();
+		employeePassword.select();
 		return false;
 	}
 	
 	const employeeType = getEmployeeType();
+	if ((employeeType == null) || (employeeType.trim() === "")) {
+		displayError("Please provide a valid employee type.");
+		employeeType.focus();
+		employeeType.select();
+		return false;
+	}
 
 	return true;
 }
@@ -55,9 +73,46 @@ function hideEmployeeSavedAlertModal() {
 
 	getSavedAlertModalElement().style.display = "none";
 }
+
+function ajaxPost(resourceRelativeUri, data, ajaxPatch) {
+	return ajax(resourceRelativeUri, "POST", data, callback);
+}
+
+function ajaxPatch(resourceRelativeUri, data, callback) {
+	return ajax(resourceRelativeUri, "PATCH", data, callback);
+}
+
+function ajax(resourceRelativeUri, verb, data, callback) {
+	const httpRequest = new XMLHttpRequest();
+
+	if (httpRequest == null) {
+		return httpRequest;
+	}
+
+	httpRequest.onreadystatechange = () => {
+		if (httpRequest.readyState === XMLHttpRequest.DONE) {
+			if ((httpRequest.status >= 200) && (httpRequest.status < 300)) {
+				handleSuccessResponse(httpRequest, callback);
+			} else {
+				handleFailureResponse(httpRequest, callback);
+			}
+		}
+	};
+
+	httpRequest.open(verb, resourceRelativeUri, true);
+	if (data != null) {
+		httpRequest.setRequestHeader('Content-Type', 'application/json');
+		httpRequest.send(JSON.stringify(data));
+	} else {
+		httpRequest.send();
+	}
+
+	return httpRequest;
+}
 // End save
 
 // Getters and setters
+
 function getSaveActionElement() {
 	return document.getElementById("saveButton");
 }
@@ -97,3 +152,13 @@ function getEmployeeConfirmPassword() {
 function getEmployeeConfirmPasswordElement() {
 	return document.getElementById("employeeConfirmPassword");
 }
+
+function getEmployeeType() {
+	return getEmployeeTypeElement().value;
+}
+
+function getEmployeeTypeElement() {
+	return document.getElementById("employeeType");
+}
+
+// End getters and setters
