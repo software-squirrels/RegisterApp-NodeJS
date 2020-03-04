@@ -16,7 +16,7 @@ export const execute = async (): Promise<CommandResponse<Employee>> => {
 					createdOn: queriedActiveUser.createdOn,
 					firstName: queriedActiveUser.firstName,
 					managerId: queriedActiveUser.managerId,
-					employeeId: queriedActiveUser.employeeId,
+					employeeId: queriedActiveUser.employeeId.toString(),
 					classification: queriedActiveUser.classification,
 				}});
 			}
