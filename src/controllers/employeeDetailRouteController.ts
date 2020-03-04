@@ -17,7 +17,7 @@ interface CanCreateEmployee {
 
 const determineCanCreateEmployee = async (req: Request): Promise<CanCreateEmployee> => {
 	return ActiveEmployeeExistsQuery.execute()
-	.then((activeUserCommandResponse: CommandResponse<EmployeeModel>): Promise<CanCreateEmployee> => {
+	.then((activeUserCommandResponse: CommandResponse<Employee>): Promise<CanCreateEmployee> => {
 		return ValidateActiveUser.execute(req.session!.id)
 		.then((activeUser: CommandResponse<ActiveUser>): Promise<CanCreateEmployee> => {
 			if (EmployeeHelper.isElevatedUser(activeUser.data!.classification)) {
