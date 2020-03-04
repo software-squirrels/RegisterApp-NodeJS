@@ -7,7 +7,7 @@ import * as EmployeeCreateCommand from "./commands/employees/employeeCreateComma
 import * as EmployeeUpdateCommand from "./commands/employees/employeeUpdateCommand";
 import { ViewNameLookup, ParameterLookup, RouteLookup } from "./lookups/routingLookup";
 import * as ValidateActiveUser from "./commands/activeUsers/validateActiveUserCommand";
-import * as ActiveEmployeeExistsQuery from "./commands/employees/activeEmployeeExistsQuery"
+import * as ActiveEmployeeExistsQuery from "./commands/employees/activeEmployeeExistsQuery";
 import { ApiResponse, CommandResponse, Employee, EmployeeSaveRequest, ActiveUser, PageResponse } from "./typeDefinitions";
 
 interface CanCreateEmployee {
@@ -25,7 +25,7 @@ const determineCanCreateEmployee = async (req: Request): Promise<CanCreateEmploy
 			}
 
 			return Promise.reject(<CanCreateEmployee> { employeeExists: true, isElevatedUser: false });
-		}).catch(()=>{
+		}).catch((error: any): Promise<CanCreateEmployee> => {
 			return Promise.reject(<CanCreateEmployee> { employeeExists: true, isElevatedUser: false});
 		}).catch((error: any): Promise<CanCreateEmployee> => {
 			return Promise.resolve(<CanCreateEmployee>{ employeeExists: false, isElevatedUser: false });
@@ -72,14 +72,14 @@ export const startWithEmployee = async (req: Request, res: Response): Promise<vo
 			});
 		}
 
-		return EmployeeQuery.execute(activeUserCommandResponse.data!.id);
+		return EmployeeQuery.queryById(activeUserCommandResponse.data!.id);
 	}).then((employeeCommandResponse: CommandResponse<Employee>): void => {
 		return res.render(ViewNameLookup.EmployeeDetail, employeeCommandResponse.data);
 	}).catch((error: any): void => {
 		res.send(<ApiResponse>{
 			errorMessage: error.message,
 			redirectUrl: RouteLookup.SignIn
-		})
+		});
 	});
 };
 
@@ -133,5 +133,5 @@ export const updateEmployee = async (req: Request, res: Response): Promise<void>
 };
 
 export const createEmployee = async (req: Request, res: Response): Promise<void> => {
-	return saveEmployee(req, res, EmployeeSaveCommand.execute);
+	return saveEmployee(req, res, EmployeeCreateCommand.execute);
 };
