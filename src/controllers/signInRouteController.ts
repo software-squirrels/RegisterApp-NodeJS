@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { Resources, ResourceKey } from "../resourceLookup";
-import { ViewNameLookup, QueryParameterLookup } from "./lookups/routingLookup";
+import { ViewNameLookup, QueryParameterLookup, RouteLookup } from "./lookups/routingLookup";
 import { ApiResponse, PageResponse } from "./typeDefinitions";
 import * as ActiveEmployeeExists from "./commands/employees/activeEmployeeExistsQuery";
 import * as EmployeeSignIn from "./commands/employees/employeeSignInCommand";
@@ -27,7 +27,7 @@ export const start = async (req: Request, res: Response): Promise<void> => {
 	.then((): void => {
 		return res.render(ViewNameLookup.SignIn);
 	}).catch((): void => {
-		return res.render(ViewNameLookup.EmployeeDetail);
+		return res.redirect(RouteLookup.EmployeeDetail);
 });
 };
 
