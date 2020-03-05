@@ -10,6 +10,7 @@ import * as EmployeeHelper from "./helpers/employeeHelper";
 import Sequelize from "sequelize";
 
 export const execute = async (userSignInRequest: UserSignInRequest, session: Express.Session): Promise<CommandResponse<ActiveUser>> => {
+	console.log("Requested ID: ", userSignInRequest.employeeId)
 	if (Helper.isBlankString(userSignInRequest.employeeId)) {
 		return Promise.reject(<CommandResponse<ActiveUser>>{
 			status: 404,
@@ -26,13 +27,7 @@ export const execute = async (userSignInRequest: UserSignInRequest, session: Exp
 	const employeeModel: (EmployeeModel | null) = await EmployeeRepository.queryByEmployeeId(parseInt(userSignInRequest.employeeId));
 
 	if (employeeModel && (parseInt(userSignInRequest.employeeId) == employeeModel.employeeId) && (EmployeeHelper.hashString(userSignInRequest.password) == employeeModel.password.toString("utf8"))) {
-		const activeUserModel: (ActiveUserModel | null) = await ActiveUserRepository.queryByEmployeeId(userSignInRequest.employeeId).catch(error => Promise.reject({
-			status: 404,
-			message: (error.message
-				||
-				Resources.getString(ResourceKey.EMPLOYEE_UNABLE_TO_QUERY))
-			})
-		);
+		const activeUserModel: any = await ActiveUserRepository.queryByEmployeeId(employeeModel.id).catch(console.error);
 
 		const createdTransaction: Sequelize.Transaction = await DatabaseConnection.createTransaction();
 		let activeUserToCreate: any = activeUserModel;
@@ -49,7 +44,7 @@ export const execute = async (userSignInRequest: UserSignInRequest, session: Exp
 		else {
 			activeUserToCreate = {
 				name: employeeModel.firstName,
-				employeeId: employeeModel.employeeId,
+				employeeId: employeeModel.id,
 				sessionKey: session.id,
 				classification: employeeModel.classification,
 				id: employeeModel.id,

@@ -78,12 +78,12 @@ export const queryBySessionKey = async (
 };
 
 export const queryByEmployeeId = async (
-	employeeId: string,
+	id: any,
 	queryTransaction?: Sequelize.Transaction
 ): Promise<ActiveUserModel | null> => {
 
 	return ActiveUserModel.findOne(<Sequelize.FindOptions>{
 		transaction: queryTransaction,
-		where: <Sequelize.WhereAttributeHash>{ employeeId: employeeId }
+		where: <Sequelize.WhereAttributeHash>{ id: id }
 	});
 };
