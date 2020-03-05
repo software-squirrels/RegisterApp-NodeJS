@@ -6,10 +6,11 @@ import { ActiveUserModel } from "../models/activeUserModel";
 import * as ActiveUserRepository from "../models/activeUserModel";
 import * as DatabaseConnection from "../models/databaseConnection";
 import * as Helper from "../helpers/helper";
+import * as EmployeeHelper from "./helpers/employeeHelper";
 
 export const execute = async (userSignInRequest: UserSignInRequest, session: Express.Session): Promise<CommandResponse<ActiveUser>> => {
 	if (Helper.isBlankString(userSignInRequest.employeeId) || !Helper.isValidUUID(userSignInRequest.employeeId)) {
-		return Promise.reject(<CommandResponse<ActiveUser>> {
+		return Promise.reject(<CommandResponse<ActiveUser>>{
 			status: 404,
 			message: Resources.getString(ResourceKey.EMPLOYEE_RECORD_ID_INVALID)
 		});
@@ -23,9 +24,10 @@ export const execute = async (userSignInRequest: UserSignInRequest, session: Exp
 
 	return EmployeeRepository.queryByEmployeeId(parseInt(userSignInRequest.employeeId))
 	.then(async (employeeModel: (EmployeeModel | null)): Promise<CommandResponse<ActiveUser>> => {
-		if (employeeModel && (parseInt(userSignInRequest.employeeId) == employeeModel.employeeId) && (userSignInRequest.password == employeeModel.password.toString("utf8"))) {
+
+		if (employeeModel && (parseInt(userSignInRequest.employeeId) == employeeModel.employeeId) && (EmployeeHelper.hashString(userSignInRequest.password) == employeeModel.password.toString("utf8"))) {
 			ActiveUserRepository.queryByEmployeeId(userSignInRequest.employeeId, await DatabaseConnection.createTransaction())
-			.then(async (activeUserModel: (ActiveUserModel | null)): Promise<CommandResponse<ActiveUser>> => {
+			.then((activeUserModel: (ActiveUserModel | null)): Promise<CommandResponse<ActiveUser>> => {
 				if (activeUserModel) {
 					activeUserModel.sessionKey = session.id;
 					activeUserModel.update(activeUserModel);

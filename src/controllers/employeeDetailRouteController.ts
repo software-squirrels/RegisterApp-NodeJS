@@ -18,20 +18,22 @@ interface CanCreateEmployee {
 const determineCanCreateEmployee = async (req: Request): Promise<CanCreateEmployee> => {
 	return ActiveEmployeeExistsQuery.execute()
 	.then((activeUserCommandResponse: CommandResponse<Employee>): Promise<CanCreateEmployee> => {
-		return ValidateActiveUser.execute(req.session!.id)
-		.then((activeUser: CommandResponse<ActiveUser>): Promise<CanCreateEmployee> => {
+
+		return ValidateActiveUser.execute((req.session!).id)
+		.then((activeUser: CommandResponse<ActiveUser>): CanCreateEmployee => {
 			if (EmployeeHelper.isElevatedUser(activeUser.data!.classification)) {
-				return Promise.resolve(<CanCreateEmployee> { employeeExists: true, isElevatedUser: false });
+				return <CanCreateEmployee> { employeeExists: true, isElevatedUser: true };
 			}
 
-			return Promise.reject(<CanCreateEmployee> { employeeExists: true, isElevatedUser: false });
-		}).catch((error: any): Promise<CanCreateEmployee> => {
-			return Promise.reject(<CanCreateEmployee> { employeeExists: true, isElevatedUser: false});
-		}).catch((error: any): Promise<CanCreateEmployee> => {
-			return Promise.resolve(<CanCreateEmployee>{ employeeExists: false, isElevatedUser: false });
+			return <CanCreateEmployee> { employeeExists: true, isElevatedUser: false };
+		}).catch((error: any): CanCreateEmployee => {
+			return <CanCreateEmployee> { employeeExists: true, isElevatedUser: false};
 		});
-	});
-};
+	}).catch((error: any): CanCreateEmployee => {
+			return <CanCreateEmployee>{ employeeExists: false, isElevatedUser: false };
+		});
+
+	};
 
 export const start = async (req: Request, res: Response): Promise<void> => {
 	if (Helper.handleInvalidSession(req, res)) {
@@ -44,17 +46,10 @@ export const start = async (req: Request, res: Response): Promise<void> => {
 			&& !canCreateEmployee.isElevatedUser) {
 				return res.redirect(Helper.buildNoPermissionsRedirectUrl());
 			}
-			else if (!canCreateEmployee.employeeExists || canCreateEmployee.isElevatedUser) {
-				return res.render(ViewNameLookup.EmployeeDetail);
-			}
 
-			return res.render(ViewNameLookup.SignIn, <PageResponse>{
-				errorMessage: Resources.getString(ResourceKey.USER_SESSION_NOT_ACTIVE)
-			});
+			return res.render(ViewNameLookup.EmployeeDetail);
 		}).catch((error: any): void => {
-			return res.render(ViewNameLookup.SignIn, <PageResponse>{
-				errorMessage: Resources.getString(ResourceKey.USER_SESSION_NOT_FOUND)
-			});
+			return res.redirect(Helper.invalidSessionRedirectUrl);
 		});
 	};
 
