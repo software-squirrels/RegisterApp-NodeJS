@@ -5,6 +5,7 @@ import { Resources, ResourceKey } from "../../../resourceLookup";
 import * as DatabaseConnection from "../models/databaseConnection";
 import { CommandResponse, Employee, EmployeeSaveRequest } from "../../typeDefinitions";
 import * as EmployeeHelper from "./helpers/employeeHelper";
+import { EmployeeClassification } from "../models/constants/entityTypes";
 
 const validateSaveRequest = (
 	saveEmployeeRequest: EmployeeSaveRequest
@@ -29,7 +30,7 @@ const validateSaveRequest = (
 };
 
 export const execute = async (
-	saveEmployeeRequest: EmployeeSaveRequest
+	saveEmployeeRequest: any
 ): Promise<CommandResponse<Employee>> => {
 
 	const validationResponse: CommandResponse<Employee> =
@@ -38,13 +39,19 @@ export const execute = async (
 		return Promise.reject(validationResponse);
 	}
 
+	const classes: any = {
+		"General Manager": EmployeeClassification.GeneralManager,
+		"Shift Manager": EmployeeClassification.ShiftManager,
+		"Cashier": EmployeeClassification.Cashier
+	};
+
 	const employeeToCreate: EmployeeModel = <EmployeeModel>{
 		id: saveEmployeeRequest.id,
 		active: saveEmployeeRequest.active,
 		lastName: saveEmployeeRequest.lastName,
 		firstName: saveEmployeeRequest.firstName,
 		managerId: saveEmployeeRequest.managerId,
-		classification: saveEmployeeRequest.classification,
+		classification: Number(classes[saveEmployeeRequest.type] || EmployeeClassification.NotDefined),
 		password: Buffer.from(EmployeeHelper.hashString(saveEmployeeRequest.password), "utf8")
 		};
 
