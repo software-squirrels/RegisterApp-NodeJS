@@ -23,90 +23,62 @@ export const execute = async (userSignInRequest: UserSignInRequest, session: Exp
 		});
 	}
 
-	return EmployeeRepository.queryByEmployeeId(parseInt(userSignInRequest.employeeId))
-	.then(async (employeeModel: (EmployeeModel | null)): Promise<CommandResponse<ActiveUser>> => {
+	const employeeModel: (EmployeeModel | null) = await EmployeeRepository.queryByEmployeeId(parseInt(userSignInRequest.employeeId));
 
-		if (employeeModel && (parseInt(userSignInRequest.employeeId) == employeeModel.employeeId) && (EmployeeHelper.hashString(userSignInRequest.password) == employeeModel.password.toString("utf8"))) {
-			ActiveUserRepository.queryByEmployeeId(userSignInRequest.employeeId)
-			.then((activeUserModel: (ActiveUserModel | null)): Promise<CommandResponse<ActiveUser>> => {
-				let createTransaction: Sequelize.Transaction;
-
-				return DatabaseConnection.createTransaction()
-				.then((createdTransaction: Sequelize.Transaction): Promise<ActiveUserModel> =>{
-					createTransaction = createdTransaction;
-					let activeUserToCreate: any;
-					if (activeUserModel) {
-						activeUserModel.sessionKey = session.id;
-						activeUserToCreate = activeUserModel;
-						return ActiveUserModel.update(
-							activeUserModel,
-							<Sequelize.UpdateOptions>{
-								transaction: createdTransaction
-							}
-						);
-					}
-					else {
-						activeUserToCreate = {
-							name: employeeModel.firstName,
-							employeeId: employeeModel.employeeId,
-							sessionKey: session.id,
-							classification: employeeModel.classification,
-							id: employeeModel.id,
-							createdOn: employeeModel.createdOn
-						};
-
-						return ActiveUserModel.create(
-							activeUserModel,
-							<Sequelize.CreateOptions>{
-								transaction: createdTransaction
-							}
-						);
-					}
-				}).then((activeUserModel: ActiveUserModel): CommandResponse<ActiveUser> =>{
-					createTransaction.commit();
-
-					return <CommandResponse<ActiveUser>>{
-						status: 201,
-						data: <ActiveUser>{
-							id: activeUserModel.id,
-							name: activeUserModel.name,
-							employeeId: activeUserModel.employeeId,
-							classification: activeUserModel.classification
-						}
-					};
-				}).catch((error: any): Promise<CommandResponse<ActiveUser>> =>{
-					if (createTransaction != null) {
-						createTransaction.rollback();
-					}
-
-					return Promise.reject(<CommandResponse<ActiveUser>>{
-						status: (error.status || 500),
-						message: (error.message
-							|| Resources.getString(ResourceKey.USER_UNABLE_TO_SIGN_IN))
-					});
-				});
+	if (employeeModel && (parseInt(userSignInRequest.employeeId) == employeeModel.employeeId) && (EmployeeHelper.hashString(userSignInRequest.password) == employeeModel.password.toString("utf8"))) {
+		const activeUserModel: (ActiveUserModel | null) = await ActiveUserRepository.queryByEmployeeId(userSignInRequest.employeeId).catch(error => Promise.reject({
+			status: 404,
+			message: (error.message
+				||
+				Resources.getString(ResourceKey.EMPLOYEE_UNABLE_TO_QUERY))
 			})
-			.catch((error: any): Promise<CommandResponse<ActiveUser>> => {
-				return Promise.reject(<CommandResponse<ActiveUser>>{
-					status: 404,
-					message: (error.message
-						||
-						Resources.getString(ResourceKey.EMPLOYEE_UNABLE_TO_QUERY))
-					});
-				});
-			}
+		);
 
-			return Promise.reject(<CommandResponse<ActiveUser>>{
-				status: 400,
-				message: Resources.getString(ResourceKey.EMPLOYEE_UNABLE_TO_SAVE)
-			});
-		}).catch((error: any): Promise<CommandResponse<ActiveUser>> => {
-			return Promise.reject(<CommandResponse<ActiveUser>>{
-				status: 404,
-				message: (
-					error.message
-					||
-					Resources.getString(ResourceKey.USER_SIGN_IN_CREDENTIALS_INVALID))
-				});
-			});
+		const createdTransaction: Sequelize.Transaction = await DatabaseConnection.createTransaction();
+		let activeUserToCreate: any = activeUserModel;
+		if (activeUserModel) {
+			activeUserModel.sessionKey = session.id;
+			activeUserToCreate = activeUserModel;
+			await ActiveUserModel.update(
+				activeUserModel,
+				<Sequelize.UpdateOptions>{
+					transaction: createdTransaction
+				}
+			);
+		}
+		else {
+			activeUserToCreate = {
+				name: employeeModel.firstName,
+				employeeId: employeeModel.employeeId,
+				sessionKey: session.id,
+				classification: employeeModel.classification,
+				id: employeeModel.id,
+				createdOn: employeeModel.createdOn
+			};
+
+			await ActiveUserModel.create(
+				activeUserToCreate,
+				<Sequelize.CreateOptions>{
+					transaction: createdTransaction
+				}
+			);
+		}
+		createdTransaction.commit();
+
+		return <CommandResponse<ActiveUser>>{
+			status: 201,
+			data: <ActiveUser>{
+				id: activeUserToCreate.id,
+				name: activeUserToCreate.name,
+				employeeId: activeUserToCreate.employeeId,
+				classification: activeUserToCreate.classification
+			}
 		};
+	}
+	return Promise.reject(<CommandResponse<ActiveUser>>{
+		status: 404,
+		message: (
+			Resources.getString(ResourceKey.USER_SIGN_IN_CREDENTIALS_INVALID)
+		)
+	});
+};
