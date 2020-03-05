@@ -44,15 +44,12 @@ export const signIn = async (req: Request, res: Response): Promise<void> => {
 export const clearActiveUser = async (req: Request, res: Response): Promise<void> => {
 	return ClearActiveUser.execute((<Express.Session>req.session).id)
 	.then((): void => {
-		return res.render(ViewNameLookup.SignIn, <PageResponse>{
-			errorMessage: Resources.getString(req.query[QueryParameterLookup.ErrorCode])
+		res.send(<ApiResponse>{
+			redirectUrl: RouteLookup.SignIn
 		});
 	}).catch((error: any): void => {
-		return res.status((error.status || 500))
-		.render(
-			ViewNameLookup.MainMenu,
-			<PageResponse>{
-				errorMessage: error.message
-			});
+		res.send(<ApiResponse>{
+			errorMessage: error.message
+		});
 	});
 };
