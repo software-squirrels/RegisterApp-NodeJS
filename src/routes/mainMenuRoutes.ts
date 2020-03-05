@@ -4,7 +4,7 @@ import * as mainMenuRouteController from "../controllers/mainMenuRouteController
 
 function mainMenuRoutes(server: express.Express) {
 	// TODO: Route for initial page load
-	server.get(RouteLookup.mainMenu, mainMenuRouteController.start);
+	server.get(RouteLookup.MainMenu, mainMenuRouteController.start);
 }
 
 module.exports.routes = mainMenuRoutes;
