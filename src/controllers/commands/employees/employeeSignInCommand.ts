@@ -10,7 +10,6 @@ import * as EmployeeHelper from "./helpers/employeeHelper";
 import Sequelize from "sequelize";
 
 export const execute = async (userSignInRequest: UserSignInRequest, session: Express.Session): Promise<CommandResponse<ActiveUser>> => {
-	console.log("Requested ID: ", userSignInRequest.employeeId)
 	if (Helper.isBlankString(userSignInRequest.employeeId)) {
 		return Promise.reject(<CommandResponse<ActiveUser>>{
 			status: 404,
