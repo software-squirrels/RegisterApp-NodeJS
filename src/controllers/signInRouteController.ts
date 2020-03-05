@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { Resources, ResourceKey } from "../resourceLookup";
 import { ViewNameLookup, QueryParameterLookup, RouteLookup } from "./lookups/routingLookup";
-import { ApiResponse, PageResponse } from "./typeDefinitions";
-import * as ActiveEmployeeExists from "./commands/employees/activeEmployeeExistsQuery";
+import { ApiResponse, PageResponse, UserSignInRequest, Employee, CommandResponse } from "./typeDefinitions";
+import * as EmployeeExists from "./commands/employees/employeeExistsQuery";
 import * as EmployeeSignIn from "./commands/employees/employeeSignInCommand";
 import * as ClearActiveUser from "./commands/employees/clearActiveUserCommand";
 
@@ -23,18 +23,19 @@ const processSignInError = (res: Response, error: any): void => {
 };
 
 export const start = async (req: Request, res: Response): Promise<void> => {
-	return ActiveEmployeeExists.execute()
-	.then((): void => {
+	return EmployeeExists.execute()
+	.then((employeeQueryCommandResponse: CommandResponse<Employee>): void => {
 		return res.render(ViewNameLookup.SignIn);
-	}).catch((): void => {
+}).catch((error: any): void => {
 		return res.redirect(RouteLookup.EmployeeDetail);
-});
+	});
 };
 
 export const signIn = async (req: Request, res: Response): Promise<void> => {
-	return EmployeeSignIn.execute(req.body, req.session!)
+	const signInRequest: UserSignInRequest = { employeeId: req.body["employeeId"], password: req.body["password"] };
+	return EmployeeSignIn.execute(signInRequest, req.session!)
 	.then((): void => {
-		return res.render(ViewNameLookup.MainMenu);
+		return res.redirect(ViewNameLookup.MainMenu);
 }).catch((error: any): void => {
 		return processSignInError(res, error);
 });
@@ -43,8 +44,7 @@ export const signIn = async (req: Request, res: Response): Promise<void> => {
 export const clearActiveUser = async (req: Request, res: Response): Promise<void> => {
 	return ClearActiveUser.execute((<Express.Session>req.session).id)
 	.then((): void => {
-		return res.render(ViewNameLookup.SignIn, <ApiResponse>{
-			redirectUrl: ViewNameLookup.SignIn,
+		return res.render(ViewNameLookup.SignIn, <PageResponse>{
 			errorMessage: Resources.getString(req.query[QueryParameterLookup.ErrorCode])
 		});
 	}).catch((error: any): void => {

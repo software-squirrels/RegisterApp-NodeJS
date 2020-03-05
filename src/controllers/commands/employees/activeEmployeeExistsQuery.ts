@@ -6,16 +6,16 @@ import * as EmployeeHelper from "./helpers/employeeHelper";
 
 export const execute = async (): Promise<CommandResponse<Employee>> => {
 	return EmployeeRepository.queryActiveExists()
-	.then((queriedActiveUser: (EmployeeModel | null)): CommandResponse<Employee> => {
+	.then((queriedActiveUser: (EmployeeModel | null)): Promise<CommandResponse<Employee>> => {
 		if (queriedActiveUser) {
-			return <CommandResponse<Employee>>{
+			return Promise.resolve(<CommandResponse<Employee>>{
 				status: 200,
-				data: EmployeeHelper.mapEmployeeData(queriedActiveUser)};
+				data: EmployeeHelper.mapEmployeeData(queriedActiveUser)});
 			}
 
-			return <CommandResponse<Employee>>{
+			return Promise.reject(<CommandResponse<Employee>>{
 				status: 404,
 				message: Resources.getString(ResourceKey.EMPLOYEES_UNABLE_TO_QUERY)
-			};
+			});
 		});
 	};

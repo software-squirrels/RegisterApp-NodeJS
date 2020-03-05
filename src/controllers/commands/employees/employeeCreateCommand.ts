@@ -4,6 +4,7 @@ import * as EmployeeRepository from "../models/employeeModel";
 import { Resources, ResourceKey } from "../../../resourceLookup";
 import * as DatabaseConnection from "../models/databaseConnection";
 import { CommandResponse, Employee, EmployeeSaveRequest } from "../../typeDefinitions";
+import * as EmployeeHelper from "./helpers/employeeHelper";
 
 const validateSaveRequest = (
 	saveEmployeeRequest: EmployeeSaveRequest
@@ -43,8 +44,9 @@ export const execute = async (
 		lastName: saveEmployeeRequest.lastName,
 		firstName: saveEmployeeRequest.firstName,
 		managerId: saveEmployeeRequest.managerId,
-		classification: saveEmployeeRequest.classification
-	};
+		classification: saveEmployeeRequest.classification,
+		password: Buffer.from(EmployeeHelper.hashString(saveEmployeeRequest.password), "utf8")
+		};
 
 	let createTransaction: Sequelize.Transaction;
 
