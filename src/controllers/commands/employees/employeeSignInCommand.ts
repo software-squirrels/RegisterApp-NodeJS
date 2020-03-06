@@ -6,10 +6,12 @@ import { ActiveUserModel } from "../models/activeUserModel";
 import * as ActiveUserRepository from "../models/activeUserModel";
 import * as DatabaseConnection from "../models/databaseConnection";
 import * as Helper from "../helpers/helper";
+import * as EmployeeHelper from "./helpers/employeeHelper";
+import Sequelize from "sequelize";
 
 export const execute = async (userSignInRequest: UserSignInRequest, session: Express.Session): Promise<CommandResponse<ActiveUser>> => {
-	if (Helper.isBlankString(userSignInRequest.employeeId) || !Helper.isValidUUID(userSignInRequest.employeeId)) {
-		return Promise.reject(<CommandResponse<ActiveUser>> {
+	if (Helper.isBlankString(userSignInRequest.employeeId)) {
+		return Promise.reject(<CommandResponse<ActiveUser>>{
 			status: 404,
 			message: Resources.getString(ResourceKey.EMPLOYEE_RECORD_ID_INVALID)
 		});
@@ -21,47 +23,56 @@ export const execute = async (userSignInRequest: UserSignInRequest, session: Exp
 		});
 	}
 
-	return EmployeeRepository.queryByEmployeeId(parseInt(userSignInRequest.employeeId))
-	.then(async (employeeModel: (EmployeeModel | null)): Promise<CommandResponse<ActiveUser>> => {
-		if (employeeModel && (parseInt(userSignInRequest.employeeId) == employeeModel.employeeId) && (userSignInRequest.password == employeeModel.password.toString("utf8"))) {
-			ActiveUserRepository.queryByEmployeeId(userSignInRequest.employeeId, await DatabaseConnection.createTransaction())
-			.then(async (activeUserModel: (ActiveUserModel | null)): Promise<CommandResponse<ActiveUser>> => {
-				if (activeUserModel) {
-					activeUserModel.sessionKey = session.id;
-					activeUserModel.update(activeUserModel);
-				}
-				else {
-					activeUserModel = new ActiveUserModel(employeeModel);
-					activeUserModel.sessionKey = session.id;
-					ActiveUserModel.create(activeUserModel);
-				}
+	const employeeModel: (EmployeeModel | null) = await EmployeeRepository.queryByEmployeeId(parseInt(userSignInRequest.employeeId));
 
-				return Promise.resolve(<CommandResponse<ActiveUser>>{
-					status: 200,
-					data: activeUserModel
-				});
-			})
-			.catch((error: any): Promise<CommandResponse<ActiveUser>> => {
-				return Promise.reject(<CommandResponse<ActiveUser>>{
-					status: 404,
-					message: (error.message
-						||
-						Resources.getString(ResourceKey.EMPLOYEE_UNABLE_TO_QUERY))
-					});
-				});
+	if (employeeModel && (parseInt(userSignInRequest.employeeId) == employeeModel.employeeId) && (EmployeeHelper.hashString(userSignInRequest.password) == employeeModel.password.toString("utf8"))) {
+		const activeUserModel: any = await ActiveUserRepository.queryByEmployeeId(employeeModel.id).catch(console.error);
+
+		const createdTransaction: Sequelize.Transaction = await DatabaseConnection.createTransaction();
+		let activeUserToCreate: any = activeUserModel;
+		if (activeUserModel) {
+			activeUserModel.sessionKey = session.id;
+			activeUserToCreate = activeUserModel;
+			await ActiveUserModel.update(
+				activeUserModel,
+				<Sequelize.UpdateOptions>{
+					transaction: createdTransaction
+				}
+			);
+		}
+		else {
+			activeUserToCreate = {
+				name: employeeModel.firstName,
+				employeeId: employeeModel.id,
+				sessionKey: session.id,
+				classification: employeeModel.classification,
+				id: employeeModel.id,
+				createdOn: employeeModel.createdOn
+			};
+
+			await ActiveUserModel.create(
+				activeUserToCreate,
+				<Sequelize.CreateOptions>{
+					transaction: createdTransaction
+				}
+			);
+		}
+		createdTransaction.commit();
+
+		return <CommandResponse<ActiveUser>>{
+			status: 201,
+			data: <ActiveUser>{
+				id: activeUserToCreate.id,
+				name: activeUserToCreate.name,
+				employeeId: activeUserToCreate.employeeId,
+				classification: activeUserToCreate.classification
 			}
-
-			return Promise.reject(<CommandResponse<ActiveUser>>{
-				status: 400,
-				message: Resources.getString(ResourceKey.USER_SIGN_IN_CREDENTIALS_INVALID)
-			});
-		}).catch((error: any): Promise<CommandResponse<ActiveUser>> => {
-			return Promise.reject(<CommandResponse<ActiveUser>>{
-				status: 404,
-				message: (
-					error.message
-					||
-					Resources.getString(ResourceKey.USER_SIGN_IN_CREDENTIALS_INVALID))
-				});
-			});
 		};
+	}
+	return Promise.reject(<CommandResponse<ActiveUser>>{
+		status: 404,
+		message: (
+			Resources.getString(ResourceKey.USER_SIGN_IN_CREDENTIALS_INVALID)
+		)
+	});
+};

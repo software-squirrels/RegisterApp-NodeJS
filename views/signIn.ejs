@@ -2,7 +2,7 @@
 
 <head>
 	<title>Register - Sign In</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1"> 
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 
 	<link rel="stylesheet" type="text/css" href="/styles/master.css">
 
@@ -15,7 +15,7 @@
 	<div class="header">
 		<h1 class="primary-message">Sign In</h1>
 	</div>
-		
+
 	<div id="main" class="main">
 		<div id="error" <% if (!locals.errorMessage || (locals.errorMessage === "")) { %> class="hidden" <% } %>>
 			<h4 id="errorMessage" class="error-message">
@@ -27,13 +27,13 @@
 
 		<form action="/" method="POST" onsubmit="return validateForm();" class="inputContent">
 			<label for="employeeID">Employee ID:</label><br>
- 			<input type="number" id="employeeID" name="employeeID" value="Employee ID"><br>
+ 			<input type="number" id="employeeID" name="employeeId" value="Employee ID"><br>
  			<label for="password">Password:</label><br>
  			<input type="password" id="password" name="password" value="Password"><br><br>
   			<input type="submit" value="Sign In">
 		</form>
 	</div>
-		
+
 </body>
 
 </html>
