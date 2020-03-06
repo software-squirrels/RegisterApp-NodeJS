@@ -14,8 +14,47 @@ function saveActionClick(event) {
 
 	const saveActionElement = event.target;
 	saveActionElement.disabled = true;
-	displayEmployeeSavedAlertModal();
-}
+
+	const employeeId = getEmployeeId();
+	const employeeIdIsDefined = ((employeeId != null) && (employeeId.trim() !== ""));
+	const saveActionUrl = ("/api/employeeDetail/"
+		+ (employeeIdIsDefined ? employeeId : ""));
+	const saveEmployeeRequest = {
+		id: employeeId,
+		firstName: getEmployeeFirstName(),
+		lastName: getEmployeeLastName(),
+		password: getEmployeePassword(),
+		type: getEmployeeType()
+	};
+
+	if (employeeIdIsDefined) {
+		ajaxPatch(saveActionUrl, saveEmployeeRequest, (callbackResponse) => {
+			saveActionElement.disabled = false;
+
+			if (isSuccessResponse(callbackResponse)) {
+				displayEmployeeSavedAlertModal();
+			}
+		});
+	} else {
+		ajaxPost(saveActionUrl, saveEmployeeRequest, (callbackResponse) => {
+			saveActionElement.disabled = false;
+
+			if (isSuccessResponse(callbackResponse)) {
+				displayEmployeeSavedAlertModal();
+
+				if ((callbackResponse.data != null)
+					&& (callbackResponse.data.employee != null)
+					&& (callbackResponse.data.employee.id.trim() !== "")) {
+
+					document.getElementById("employeeID").classList.remove("hidden");
+
+					setEmployeeId(callbackResponse.data.employee.id.trim());
+				}
+			}
+		});
+	}
+};
+
 
 
 function validateSave() {
@@ -74,7 +113,7 @@ function hideEmployeeSavedAlertModal() {
 	getSavedAlertModalElement().style.display = "none";
 }
 
-function ajaxPost(resourceRelativeUri, data, ajaxPatch) {
+function ajaxPost(resourceRelativeUri, data, callback) {
 	return ajax(resourceRelativeUri, "POST", data, callback);
 }
 
@@ -159,6 +198,16 @@ function getEmployeeType() {
 
 function getEmployeeTypeElement() {
 	return document.getElementById("employeeType");
+}
+
+function getEmployeeId() {
+	return getEmployeeIdElement().value;
+}
+function setEmployeeId(employeeId) {
+	getEmployeeIdElement().value = employeeId;
+}
+function getEmployeeIdElement() {
+	return document.getElementById("employeeId");
 }
 
 // End getters and setters

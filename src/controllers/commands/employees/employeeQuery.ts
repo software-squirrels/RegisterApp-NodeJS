@@ -7,10 +7,10 @@ import { CommandResponse, Employee } from "../../typeDefinitions";
 
 export const queryById = async (employeeId?: string): Promise<CommandResponse<Employee>> => {
 	if (Helper.isBlankString(employeeId)) {
-		return Promise.reject(<CommandResponse<Employee>>{
+		return <CommandResponse<Employee>>{
 			status: 422,
 			message: Resources.getString(ResourceKey.EMPLOYEE_RECORD_ID_INVALID)
-		});
+		};
 	}
 
 	return EmployeeRepository.queryById(<string>employeeId)

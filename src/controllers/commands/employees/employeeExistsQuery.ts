@@ -5,7 +5,7 @@ import { CommandResponse, Employee } from "../../typeDefinitions";
 import * as EmployeeHelper from "./helpers/employeeHelper";
 
 export const execute = async (): Promise<CommandResponse<Employee>> => {
-	return EmployeeRepository.queryActiveExists()
+	return EmployeeRepository.queryExists()
 	.then((queriedActiveUser: (EmployeeModel | null)): Promise<CommandResponse<Employee>> => {
 		if (queriedActiveUser) {
 			return Promise.resolve(<CommandResponse<Employee>>{

@@ -5,9 +5,10 @@ import * as EmployeeHelper from "./commands/employees/helpers/employeeHelper";
 import * as EmployeeQuery from "./commands/employees/employeeQuery";
 import * as EmployeeCreateCommand from "./commands/employees/employeeCreateCommand";
 import * as EmployeeUpdateCommand from "./commands/employees/employeeUpdateCommand";
-import { ViewNameLookup, ParameterLookup, RouteLookup } from "./lookups/routingLookup";
+import { ViewNameLookup, ParameterLookup, RouteLookup, QueryParameterLookup } from "./lookups/routingLookup";
 import * as ValidateActiveUser from "./commands/activeUsers/validateActiveUserCommand";
 import * as ActiveEmployeeExistsQuery from "./commands/employees/activeEmployeeExistsQuery";
+import * as EmployeeExistsQuery from "./commands/employees/employeeExistsQuery";
 import { ApiResponse, CommandResponse, Employee, EmployeeSaveRequest, ActiveUser, PageResponse } from "./typeDefinitions";
 
 interface CanCreateEmployee {
@@ -16,20 +17,20 @@ interface CanCreateEmployee {
 }
 
 const determineCanCreateEmployee = async (req: Request): Promise<CanCreateEmployee> => {
-	return ActiveEmployeeExistsQuery.execute()
+	return EmployeeExistsQuery.execute()
 	.then((activeUserCommandResponse: CommandResponse<Employee>): Promise<CanCreateEmployee> => {
-		return ValidateActiveUser.execute(req.session!.id)
+		return ValidateActiveUser.execute((req.session!).id)
 		.then((activeUser: CommandResponse<ActiveUser>): Promise<CanCreateEmployee> => {
 			if (EmployeeHelper.isElevatedUser(activeUser.data!.classification)) {
-				return Promise.resolve(<CanCreateEmployee> { employeeExists: true, isElevatedUser: false });
+				return Promise.resolve(<CanCreateEmployee> { employeeExists: true, isElevatedUser: true });
 			}
 
-			return Promise.reject(<CanCreateEmployee> { employeeExists: true, isElevatedUser: false });
+			return Promise.resolve(<CanCreateEmployee> { employeeExists: true, isElevatedUser: false });
 		}).catch((error: any): Promise<CanCreateEmployee> => {
-			return Promise.reject(<CanCreateEmployee> { employeeExists: true, isElevatedUser: false});
-		}).catch((error: any): Promise<CanCreateEmployee> => {
-			return Promise.resolve(<CanCreateEmployee>{ employeeExists: false, isElevatedUser: false });
+			return Promise.reject(<CanCreateEmployee>{ employeeExists: true, isElevatedUser: false });
 		});
+	}).catch((error: any): Promise<CanCreateEmployee> => {
+			return Promise.resolve(<CanCreateEmployee>{ employeeExists: false, isElevatedUser: false});
 	});
 };
 
@@ -40,21 +41,14 @@ export const start = async (req: Request, res: Response): Promise<void> => {
 
 	return determineCanCreateEmployee(req)
 	.then((canCreateEmployee: CanCreateEmployee): void => {
-		if (canCreateEmployee.employeeExists
-			&& !canCreateEmployee.isElevatedUser) {
-				return res.redirect(Helper.buildNoPermissionsRedirectUrl());
-			}
-			else if (!canCreateEmployee.employeeExists || canCreateEmployee.isElevatedUser) {
-				return res.render(ViewNameLookup.EmployeeDetail);
-			}
+			if (canCreateEmployee.employeeExists
+				&& !canCreateEmployee.isElevatedUser) {
+					return res.redirect(Helper.buildNoPermissionsRedirectUrl());
+				}
 
-			return res.render(ViewNameLookup.SignIn, <PageResponse>{
-				errorMessage: Resources.getString(ResourceKey.USER_SESSION_NOT_ACTIVE)
-			});
-		}).catch((error: any): void => {
-			return res.render(ViewNameLookup.SignIn, <PageResponse>{
-				errorMessage: Resources.getString(ResourceKey.USER_SESSION_NOT_FOUND)
-			});
+			return res.render(ViewNameLookup.EmployeeDetail);
+		}).catch((canCreateEmployee: CanCreateEmployee): void => {
+			return res.redirect(RouteLookup.SignIn + "?" + QueryParameterLookup.ErrorCode + "=" + ResourceKey.USER_SESSION_NOT_ACTIVE);
 		});
 	};
 
