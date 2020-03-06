@@ -93,9 +93,9 @@ const saveEmployee = async (
 	let employeeExists: boolean;
 
 	return determineCanCreateEmployee(req)
-	.then((canCreateEmployee: CanCreateEmployee): Promise<CommandResponse<Employee>> => {
-		if (canCreateEmployee.employeeExists
-			&& !canCreateEmployee.isElevatedUser) {
+		.then((canCreateEmployee: CanCreateEmployee): Promise<CommandResponse<Employee>> => {
+			if (canCreateEmployee.employeeExists
+				&& !canCreateEmployee.isElevatedUser) {
 
 				return Promise.reject(<CommandResponse<boolean>>{
 					status: 403,
@@ -107,10 +107,7 @@ const saveEmployee = async (
 
 			return performSave(req.body, !employeeExists);
 		}).then((saveEmployeeCommandResponse: CommandResponse<Employee>): void => {
-			res.status(saveEmployeeCommandResponse!.status)
-			.send(<ApiResponse>{
-				redirectUrl: RouteLookup.SignIn + "?id=" + saveEmployeeCommandResponse.data!.id
-			});
+			return res.redirect(RouteLookup.SignIn);
 		}).catch((error: any): void => {
 			return Helper.processApiError(
 				error,
@@ -118,9 +115,9 @@ const saveEmployee = async (
 				<Helper.ApiErrorHints>{
 					defaultErrorMessage: Resources.getString(
 						ResourceKey.EMPLOYEE_UNABLE_TO_SAVE)
-					});
 				});
-			};
+		});
+};
 
 export const updateEmployee = async (req: Request, res: Response): Promise<void> => {
 	return saveEmployee(req, res, EmployeeUpdateCommand.execute);
