@@ -9,9 +9,6 @@
 	<script type="text/javascript" src="/scripts/master.js" defer></script>
 	<!--<script type="text/javascript" src="/scripts/mainMenu.js" defer></script>-->
 	<script> var noImplementation = "Functionality has not yet been implemented";</script>
-	<!--<script> var createEmployeeVar = document.getElementById("createEmployeeButton"); </script>
-	<script> var salesReportVar = document.getElementById("salesReportButton"); </script>
-	<script> var cashierReportVar = document.getElementById("cashierReportButton"); </script>-->
 	
 </head>
 
@@ -48,28 +45,21 @@
 		
 		<!-- TODO: Hidden to people who are not elevated users or managers -->
 		
-		<script> if (!locals.isElevatedUser) {
-			document.getElementById("createEmployeeButton").style.display = "none";
-			document.getElementById("salesReportButton").style.display = "none";
-			document.getElementById("cashierReportButton").style.display = "none";
-			}
-		</script>
-		
-		<div>
+		<div <% if (!locals.isElevatedUser) { %>class="hidden"<% } %>>
 			<a id="createEmployeeButton" href="/employeeDetail/" class="button">Create Employee</a>
 		</div>
 		<br />
 		<br />
 		<br />
 		
-		<div>
+		<div <% if (!locals.isElevatedUser) { %>class="hidden"<% } %>>
 			<a id="salesReportButton" onclick="return displayError(noImplementation)" class="button">Sales Report</a>
 		</div>
 		<br />
 		<br />
 		<br />
 		
-		<div>
+		<div <% if (!locals.isElevatedUser) { %>class="hidden"<% } %>>
 			<a id="cashierReportButton" onclick="return displayError(noImplementation)" class="button">Cashier Report</a>
 		</div>
 		<br />
