@@ -9,11 +9,6 @@
 
 	<script type="text/javascript" src="/scripts/master.js" defer></script>
 	<script type="text/javascript" src="/scripts/productDetail.js" defer></script>
-	
-	<!--<script> var saveButtonVar = document.getElementById("saveButton"); </script>
-	<script> var deleteButtonVar = document.getElementById("deleteButton"); </script>
-	<script> var productLookupCodeVar = document.getElementById("productLookupCode"); </script>
-	<script> var productCountVar = document.getElementById("productCount"); </script>-->
 </head>
 
 <body>
@@ -43,28 +38,20 @@
 					<tr>
 						<td class="label">Lookup Code:</td>
 						<td>
-							<input id="productLookupCode" type="text" value="<% if (locals.product && locals.product.lookupCode) { %><%= locals.product.lookupCode %><% } %>" class="update" />
+							<input id="productLookupCode" type="text" value="<% if (locals.product && locals.product.lookupCode) { %><%= locals.product.lookupCode %><% } %>" class="update" <% if (!locals.isElevatedUser) { %>disabled<% } %>/>
 						</td>
 					</tr>
 					<tr>
 						<td class="label">Count:</td>
 						<td>
-							<input id="productCount" type="number" value="<% if (locals.product && locals.product.count) { %><%= locals.product.count.toString() %><% } %>" class="update" />
+							<input id="productCount" type="number" value="<% if (locals.product && locals.product.count) { %><%= locals.product.count.toString() %><% } %>" class="update" <% if (!locals.isElevatedUser) { %>disabled"<% } %>/>
 						</td>
 					</tr>
 				</tbody>
 			</table>
 		</div>
-		
-		<script> if (!locals.isElevatedUser) {
-			document.getElementById("saveButton").style.display = "none";
-			document.getElementById("deleteButton").style.display = "none";
-			document.getElementById("productLookupCode").disabled = true;
-			document.getElementById("productCount").disabled = true;
-			}
-		</script>
 
-		<div>
+		<div <% if (!locals.isElevatedUser) { %>class="hidden"<% } %>>
 			<br />
 			<div id="deleteActionContainer" <% if (!locals.product || !locals.product.id || (locals.product.id.trim() === "")) { %>class="hidden"<% } %>>
 				<button id="deleteButton" type="button" class="action">Delete</button>
