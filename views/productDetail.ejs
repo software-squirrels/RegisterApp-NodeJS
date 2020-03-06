@@ -10,10 +10,10 @@
 	<script type="text/javascript" src="/scripts/master.js" defer></script>
 	<script type="text/javascript" src="/scripts/productDetail.js" defer></script>
 	
-	<script> var saveButtonVar = document.getElementById("saveButton"); </script>
+	<!--<script> var saveButtonVar = document.getElementById("saveButton"); </script>
 	<script> var deleteButtonVar = document.getElementById("deleteButton"); </script>
 	<script> var productLookupCodeVar = document.getElementById("productLookupCode"); </script>
-	<script> var productCountVar = document.getElementById("productCount"); </script>
+	<script> var productCountVar = document.getElementById("productCount"); </script>-->
 </head>
 
 <body>
@@ -56,12 +56,13 @@
 			</table>
 		</div>
 		
-		<% if (!locals.isElevatedUser) { %>
-			<% saveButtonVar.style.display = "none"; %>
-			<% deleteButtonVar.style.display = "none"; %>
-			<% productLookupCodeVar.disabled = true; %>
-			<% productCountVar.disabled = true; %>
-		<% } %>
+		<script> if (!locals.isElevatedUser) {
+			document.getElementById("saveButton").style.display = "none";
+			document.getElementById("deleteButton").style.display = "none";
+			document.getElementById("productLookupCode").disabled = true;
+			document.getElementById("productCount").disabled = true;
+			}
+		</script>
 
 		<div>
 			<br />
