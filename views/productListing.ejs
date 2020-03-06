@@ -9,6 +9,7 @@
 
 	<script type="text/javascript" src="/scripts/master.js" defer></script>
 	<script type="text/javascript" src="/scripts/productListing.js" defer></script>
+	<!--<script> var createNewVar = document.getElementById("createNewButton"); </script>-->
 </head>
 
 <body>
@@ -24,10 +25,17 @@
 				<% } %>
 			</h4>
 		</div>
+		
+		<script> if (!locals.isElevatedUser) {
+			document.getElementById("createNewButton").style.display = "none";
+			}
+		</script>
+		
+		
 
 		<div class="productsWrapper">
-			<div <% if (locals.employee.isElevatedUser == false) { %>class="hidden"<% %>>
-				<a href="/productDetail/" class="button">Create New</a>
+			<div>
+				<a id="createNewButton" href="/productDetail/" class="button">Create New</a>
 			</div>
 			<br />
 			<br />

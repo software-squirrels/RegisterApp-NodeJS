@@ -5,6 +5,7 @@ import * as ProductQuery from "./commands/products/productQuery";
 import * as ProductCreateCommand from "./commands/products/productCreateCommand";
 import * as ProductDeleteCommand from "./commands/products/productDeleteCommand";
 import * as ProductUpdateCommand from "./commands/products/productUpdateCommand";
+import * as EmployeeHelper from "./commands/employees/helpers/employeeHelper";
 import * as ValidateActiveUser from "./commands/activeUsers/validateActiveUserCommand";
 import { ViewNameLookup, ParameterLookup, RouteLookup } from "./lookups/routingLookup";
 import { CommandResponse, Product, ProductDetailPageResponse, ApiResponse, ProductSaveResponse, ProductSaveRequest, ActiveUser } from "./typeDefinitions";
@@ -29,12 +30,20 @@ const processStartProductDetailError = (res: Response, error: any): void => {
 };
 
 export const start = async (req: Request, res: Response): Promise<void> => {
-	return ProductQuery.queryById(req.params[ParameterLookup.ProductId])
-		.then((productsCommandResponse: CommandResponse<Product>): void => {
+	if (Helper.handleInvalidSession(req, res)) {
+		return;
+	}
+	let isElevatedUser: boolean;
+	return ValidateActiveUser.execute((<Express.Session>req.session).id)
+		.then((activeUserCommandResponse: CommandResponse<ActiveUser>): Promise<CommandResponse<Product>> => {
+			isElevatedUser = EmployeeHelper.isElevatedUser((<ActiveUser>activeUserCommandResponse.data).classification);
+	return ProductQuery.queryById(req.params[ParameterLookup.ProductId]);
+		}).then((productsCommandResponse: CommandResponse<Product>): void => {
 			return res.render(
 				ViewNameLookup.ProductDetail,
 				<ProductDetailPageResponse>{
-					product: productsCommandResponse.data
+					product: productsCommandResponse.data,
+					isElevatedUser: isElevatedUser
 				});
 		}).catch((error: any): void => {
 			return processStartProductDetailError(res, error);
