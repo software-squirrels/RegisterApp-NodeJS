@@ -14,7 +14,7 @@ const processSignInError = (res: Response, error: any): void => {
 
 	return res.status((error.status || 500))
 	.render(
-		ViewNameLookup.MainMenu,
+		ViewNameLookup.SignIn,
 		<PageResponse>{
 			errorMessage: (error.message
 			||
