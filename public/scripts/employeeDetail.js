@@ -34,7 +34,8 @@ function saveActionClick(event) {
 			if (isSuccessResponse(callbackResponse)) {
 				displayEmployeeSavedAlertModal();
 			}
-		});
+		})
+		window.location.assign(callbackResponse.data.redirectUrl);
 	} else {
 		ajaxPost(saveActionUrl, saveEmployeeRequest, (callbackResponse) => {
 			saveActionElement.disabled = false;
@@ -51,7 +52,9 @@ function saveActionClick(event) {
 					setEmployeeId(callbackResponse.data.employee.id.trim());
 				}
 			}
-		});
+		})
+		window.location.assign(callbackResponse.data.redirectUrl)
+		;
 	}
 };
 
